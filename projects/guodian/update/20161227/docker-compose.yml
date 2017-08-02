@@ -1,0 +1,155 @@
+version: '2'
+services:
+  web:
+    image: daocloud.io/muninn/web:c_guodian
+    ports:
+    - 80:80
+    environment:
+    - API_URL=http://${IP}:8020/
+    - USABLE=enterprise_access_visitors
+    depends_on:
+    - enterprise
+    - device
+    - access
+    - attendance
+    restart: always
+  gateway:
+    image: daocloud.io/muninn/gateway:c_guodian
+    ports:
+    - 8020:80
+    restart: always
+  enterprise:
+    image: daocloud.io/muninn/enterprise:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - EPCONFIG_DEBUG=true
+    restart: always
+  device:
+    image: daocloud.io/muninn/device:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - DECONFIG_DEBUG=true
+    restart: always
+  access:
+    image: daocloud.io/muninn/access:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - ACCONFIG_DEBUG=true
+    restart: always
+  attendance:
+    image: daocloud.io/muninn/attendance:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - ATCONFIG_DEBUG=true
+    restart: always
+  veinlistener:
+    image: daocloud.io/muninn/veinlistener:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    ports:
+    - 9055:9022
+    environment:
+    - VLCONFIG_DEBUG=true
+    restart: always
+  doorcontroller:
+    image: daocloud.io/muninn/doorcontroller:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - DCCONFIG_DEBUG=true
+    restart: always
+  veinverification:
+    image: daocloud.io/muninn/veinverification:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - VVCONFIG_DEBUG=true
+    - VVCONFIG_SECURITY=3
+    restart: always
+  veinenrollment:
+    image: daocloud.io/muninn/veinenrollment:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - VECONFIG_DEBUG=true
+    restart: always
+  visitor:
+    image: daocloud.io/muninn/visitor:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - VICONFIG_DEBUG=true
+    restart: always
+  padadapter:
+    image: daocloud.io/muninn/padadapter:c_guodian
+    depends_on:
+    - rabbitmq
+    environment:
+    - PACONFIG_DEBUG=true
+    restart: always
+  minioadapter:
+    image: daocloud.io/muninn/minioadapter:c_guodian
+    depends_on:
+    - minio
+    environment:
+    - MACONFIG_DEBUG=true
+    - MACONFIG_ENDPOINT=${IP}:9000
+    restart: always
+  mysql:
+    image: mysql:5
+    ports:
+    - 3313:3306
+    environment:
+    - TZ=Asia/Shanghai
+    volumes:
+    - /home/ubuntu/mysql_data/guodian:/var/lib/mysql
+    restart: always
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+    - 4369:4369
+    - 5671:5671
+    - 5672:5672
+    - 25672:25672
+    - 15675:15672
+    hostname: guodian-rabbit
+    restart: always
+  redis:
+    image: redis:3
+    restart: always
+  minio:
+    image: minio/minio:edge
+    environment:
+    - MINIO_ACCESS_KEY=shengdian
+    - MINIO_SECRET_KEY=xianshengdianshijikejiyouxiangongsi
+    volumes:
+    - /home/ubuntu/minio/export:/export
+    - /home/ubuntu/minio/config:/root/.minio
+    ports:
+    - 9000:9000
+    restart: always
+    command: server /export
+  posprinter:
+    image: daocloud.io/muninn/posprinter:c_guodian
+    environment:
+    - PP_OSS_URL=minio:9000
+    restart: unless-stopped
+
+

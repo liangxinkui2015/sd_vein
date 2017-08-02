@@ -1,0 +1,87 @@
+version: '2'
+services:
+  web:
+    image: daocloud.io/muninn/web:c_yangling
+    ports:
+    - 80:80
+    environment:
+    - API_URL=http://${IP}:8010/
+    depends_on:
+    - enterprise
+    - device
+    - access
+    - attendance
+  gateway:
+    image: daocloud.io/muninn/gateway:c_yangling
+    ports:
+    - 8010:80
+  enterprise:
+    image: daocloud.io/muninn/enterprise:c_yangling
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - EPCONFIG_BASE_URL=${IP}:8010
+  device:
+    image: daocloud.io/muninn/device:c_yangling
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - DECONFIG_BASE_URL=${IP}:8010
+  access:
+    image: daocloud.io/muninn/access:c_yangling
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - ACCONFIG_BASE_URL=${IP}:8010
+  attendance:
+    image: daocloud.io/muninn/attendance:c_yangling
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - ATCONFIG_BASE_URL=${IP}:8010
+  veinlistener:
+    image: daocloud.io/muninn/veinlistener:c_yangling
+    depends_on:
+    - mysql
+    - rabbitmq
+    ports:
+    - 9044:9022
+    environment:
+    - VLCONFIG_BASE_URL=${IP}:8010
+  doorcontroller:
+    image: daocloud.io/muninn/doorcontroller:c_yangling
+    depends_on:
+    - mysql
+    - rabbitmq
+  veinverification:
+    image: daocloud.io/muninn/veinverification:c_yangling
+    depends_on:
+    - mysql
+    - rabbitmq
+  veinenrollment:
+    image: daocloud.io/muninn/veinenrollment:c_yangling
+    depends_on:
+    - mysql
+    - rabbitmq
+  mysql:
+    image: mysql
+    ports:
+    - 3312:3306
+    volumes:
+    - /home/ubuntu/mysql_data/yangling:/var/lib/mysql
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+    - 15674:15672
+    hostname: yangling-rabbit
+  redis:
+    image: redis
+

@@ -1,0 +1,3 @@
+use attendance;
+alter table POPULAR_RULE add DEVICE_LIST json DEFAULT NULL;
+UPDATE POPULAR_RULE SET DEVICE_LIST = '[]';

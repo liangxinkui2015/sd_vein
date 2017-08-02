@@ -1,0 +1,107 @@
+version: '2'
+services:
+  web:
+    image: daocloud.io/muninn/web:c_zhongyuan
+    ports:
+    - 80:80
+    environment:
+    - API_URL=http://${IP}:8030/
+    - DISABLE=attendance_visitors_enterprise_access_
+    depends_on:
+    - device
+    - exam
+    restart: always
+  gateway:
+    image: daocloud.io/muninn/gateway:c_zhongyuan
+    ports:
+    - 8030:80
+    restart: always
+  device:
+    image: daocloud.io/muninn/device:c_zhongyuan
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - DECONFIG_DEBUG=true
+    restart: always
+  padadapter:
+    image: daocloud.io/muninn/padadapter:c_zhongyuan
+    depends_on:
+    - rabbitmq
+    environment:
+    - PACONFIG_DEBUG=true
+    restart: always
+  veinlistener:
+    image: daocloud.io/muninn/veinlistener:c_zhongyuan
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - VLCONFIG_DEBUG=true
+    ports:
+    - 9066:9022
+    restart: always
+  veinverification:
+    image: daocloud.io/muninn/veinverification:c_zhongyuan
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - VVCONFIG_SECURITY=4
+    - VVCONFIG_DEBUG=true
+    restart: always
+  veinenrollment:
+    image: daocloud.io/muninn/veinenrollment:c_zhongyuan
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - VECONFIG_DEBUG=true
+    restart: always
+  exam:
+    image: daocloud.io/muninn/exam:c_zhongyuan
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - EACONFIG_DEBUG=true
+    restart: always  
+  mysql:
+    image: mysql:5
+    ports:
+    - 3314:3306
+    volumes:
+    - /home/ubuntu/mysql_data/zhongyuan:/var/lib/mysql
+    restart: always
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+    - 15676:15672
+    hostname: zhongyuan-rabbit
+    restart: always
+  redis:
+    image: redis:3
+    restart: always
+  minioadapter:
+    image: daocloud.io/muninn/minioadapter:c_zhongyuan
+    depends_on:
+    - minio
+    environment:
+    - MACONFIG_DEBUG=true
+    - MACONFIG_ENDPOINT=${IP}:9000
+    restart: always
+  minio:
+    image: minio/minio:edge
+    environment:
+    - MINIO_ACCESS_KEY=shengdian
+    - MINIO_SECRET_KEY=xianshengdianshijikejiyouxiangongsi
+    volumes:
+    - /home/ubuntu/minio/export:/export
+    - /home/ubuntu/minio/config:/root/.minio
+    ports:
+    - 10000:9000
+    restart: always
+    command: server /export
+                                                            

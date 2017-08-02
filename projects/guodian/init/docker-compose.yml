@@ -1,0 +1,87 @@
+version: '2'
+services:
+  web:
+    image: daocloud.io/muninn/web:c_guodian
+    ports:
+    - 80:80
+    environment:
+    - API_URL=http://${IP}:8020/
+    depends_on:
+    - enterprise
+    - device
+    - access
+    - attendance
+  gateway:
+    image: daocloud.io/muninn/gateway:c_guodian
+    ports:
+    - 8020:80
+  enterprise:
+    image: daocloud.io/muninn/enterprise:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - EPCONFIG_BASE_URL=${IP}:8020
+  device:
+    image: daocloud.io/muninn/device:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - DECONFIG_BASE_URL=${IP}:8020
+  access:
+    image: daocloud.io/muninn/access:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - ACCONFIG_BASE_URL=${IP}:8020
+  attendance:
+    image: daocloud.io/muninn/attendance:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - ATCONFIG_BASE_URL=${IP}:8020
+  veinlistener:
+    image: daocloud.io/muninn/veinlistener:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+    ports:
+    - 9055:9022
+    environment:
+    - VLCONFIG_BASE_URL=${IP}:8020
+  doorcontroller:
+    image: daocloud.io/muninn/doorcontroller:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+  veinverification:
+    image: daocloud.io/muninn/veinverification:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+  veinenrollment:
+    image: daocloud.io/muninn/veinenrollment:c_guodian
+    depends_on:
+    - mysql
+    - rabbitmq
+  mysql:
+    image: mysql
+    ports:
+    - 3313:3306
+    volumes:
+    - /home/ubuntu/mysql_data/guodian:/var/lib/mysql
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+    - 15675:15672
+    hostname: guodian-rabbit
+  redis:
+    image: redis
+

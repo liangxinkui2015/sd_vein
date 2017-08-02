@@ -1,0 +1,26 @@
+[Unit]
+Description=Dockerized Vein Prd Service
+After=docker.service
+BindsTo=docker.service
+Conflicts=shutdown.target reboot.target halt.target
+ 
+[Service]
+TimeoutStartSec=0
+TimeoutStopSec=30
+Restart=always
+RestartSec=10
+
+Environment="IP=192.168.31.90"
+ 
+WorkingDirectory=/home/ubuntu/compose
+ 
+ExecStart=/usr/local/bin/docker-compose /home/ubuntu/compose/docker-compose.yml up
+ 
+ExecStop=/usr/local/bin/docker-compose /home/ubuntu/compose/docker-compose.yml down
+
+ExecReload=/usr/local/bin/docker-compose /home/ubuntu/compose/docker-compose.yml up
+ 
+NotifyAccess=all
+ 
+[Install]
+WantedBy=multi-user.target

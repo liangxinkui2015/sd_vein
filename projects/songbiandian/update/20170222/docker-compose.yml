@@ -1,0 +1,133 @@
+version: '2'
+services:
+  web:
+    image: daocloud.io/muninn/web:c_songbiandian
+    ports:
+    - ${WEB_PORT}:80
+    environment:
+    - API_URL=http://${IP}:${API_PORT}/
+    - USABLE=enterprise_access_attendance_core
+    depends_on:
+    - gateway
+    restart: unless-stopped
+  gateway:
+    image: daocloud.io/muninn/gateway:c_songbiandian
+    ports:
+    - ${API_PORT}:80
+    depends_on:
+    - enterprise
+    - access
+    - attendance
+    - veincore
+    restart: unless-stopped
+  enterprise:
+    image: daocloud.io/muninn/enterprise:c_songbiandian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - EPCONFIG_DEBUG=${DEBUG}
+    restart: unless-stopped
+  veincore:
+    image: daocloud.io/muninn/veincore:c_songbiandian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - VCCONFIG_DEBUG=${DEBUG}
+    restart: unless-stopped
+  access:
+    image: daocloud.io/muninn/access:c_songbiandian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - ACCONFIG_DEBUG=${DEBUG}
+    restart: unless-stopped
+  attendance:
+    image: daocloud.io/muninn/attendance:c_songbiandian
+    depends_on:
+    - mysql
+    - rabbitmq
+    - redis
+    environment:
+    - ATCONFIG_DEBUG=${DEBUG}
+    restart: unless-stopped
+  veinlistener:
+    image: daocloud.io/muninn/veinlistener:c_songbiandian
+    depends_on:
+    - mysql
+    - rabbitmq
+    ports:
+    - ${VEIN_PORT}:9022
+    environment:
+    - VLCONFIG_DEBUG=${DEBUG}
+    restart: unless-stopped
+  padadapter:
+    image: daocloud.io/muninn/padadapter:c_songbiandian
+    ports:
+    - ${PAD_PORT}:9789
+    restart: unless-stopped
+  minio:
+    image: daocloud.io/muninn/minio
+    environment:
+    - MINIO_ACCESS_KEY=shengdian
+    - MINIO_SECRET_KEY=xianshengdianshijikejiyouxiangongsi
+    volumes:
+    - ${OSS_DATA}/export:/export
+    - ${OSS_DATA}/config:/root/.minio
+    ports:
+    - ${OSS_PORT}:9000
+    restart: unless-stopped
+    command: server /export
+  minioadapter:
+    image: daocloud.io/muninn/minioadapter:c_songbiandian
+    environment:
+    - MACONFIG_DEBUG=${DEBUG}
+    - MACONFIG_ENDPOINT=${IP}:${OSS_PORT}
+    restart: unless-stopped
+  doorcontroller:
+    image: daocloud.io/muninn/doorcontroller:c_songbiandian
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - DCCONFIG_DEBUG=${DEBUG}
+    restart: unless-stopped
+  veinverification:
+    image: daocloud.io/muninn/veinverification:c_songbiandian
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - VVCONFIG_SECURITY=${VVCONFIG_SECURITY}
+    - VVCONFIG_DEBUG=${DEBUG}
+    restart: unless-stopped
+  veinenrollment:
+    image: daocloud.io/muninn/veinenrollment:c_songbiandian
+    depends_on:
+    - mysql
+    - rabbitmq
+    environment:
+    - VECONFIG_DEBUG=${DEBUG}
+    restart: unless-stopped
+  mysql:
+    image: mysql:5.7.16
+    ports:
+    - ${DB_PORT}:3306
+    volumes:
+    - /home/ubuntu/mysql_data/songbiandian:/var/lib/mysql
+    restart: unless-stopped
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+    - ${MQ_PORT}:15672
+    hostname: songbiandian-rabbit
+    restart: unless-stopped
+  redis:
+    image: redis:3
+    restart: unless-stopped
+

@@ -1,0 +1,6 @@
+images
+*.tar
+*.tgz
+*.tar.gz
+# IDEA
+.idea
